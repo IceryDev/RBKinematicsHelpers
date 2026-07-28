@@ -28,9 +28,9 @@ Matrix3x3 get321EulerAnglesDeg(const double deg1, const double deg2, const doubl
 
 
 int main() {
-    Matrix3x3 mat {0.925417, 0.336824, 0.173648,
-                   0.0296956, -0.521281, 0.852869,
-                   0.377786, -0.784102, -0.492404};
+    Matrix3x3 mat {1, 0, 0,
+                    0, -1, 0,
+                    0, 0, -1};
 
     PRV3 rot {mat};
 

@@ -8,4 +8,5 @@ add_executable(RBKinematicsHelpers main.cpp
         integrators.cpp
         integrators.h
         utils.h
-        PRV.h)
+        PRV.h
+        vector3.h)
