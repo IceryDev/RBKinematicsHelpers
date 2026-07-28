@@ -3,6 +3,7 @@
 #include <cmath>
 #include "matrix3x3.h"
 #include "integrators.h"
+#include "PRV.h"
 #include "utils.h"
 using namespace Utils;
 
@@ -27,5 +28,11 @@ Matrix3x3 get321EulerAnglesDeg(const double deg1, const double deg2, const doubl
 
 
 int main() {
-    std::cout << Integrators::integrator(42, 0.2);
+    Matrix3x3 mat {0.925417, 0.336824, 0.173648,
+                   0.0296956, -0.521281, 0.852869,
+                   0.377786, -0.784102, -0.492404};
+
+    PRV3 rot {mat};
+
+    std::cout << rot;
 }

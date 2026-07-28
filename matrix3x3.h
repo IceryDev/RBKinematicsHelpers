@@ -24,6 +24,10 @@ public:
         return *this;
     }
 
+    double trace() {
+        return (*this)[1, 1] + (*this)[2, 2] + (*this)[3, 3];
+    }
+
     Matrix3x3 matMul(Matrix3x3 matrix){
 
         Matrix3x3 tempMatrix {};

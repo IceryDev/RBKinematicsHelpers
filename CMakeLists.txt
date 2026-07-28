@@ -7,4 +7,5 @@ add_executable(RBKinematicsHelpers main.cpp
         matrix3x3.h
         integrators.cpp
         integrators.h
-        utils.h)
+        utils.h
+        PRV.h)

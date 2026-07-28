@@ -6,9 +6,7 @@
 using namespace Utils;
 
 namespace Integrators {
-    std::vector eulerAngles321 {deg2Rad(40), deg2Rad(30), deg2Rad(80)};
-
-
+    std::vector<double> eulerAngles321 {deg2Rad(40), deg2Rad(30), deg2Rad(80)};
 
     std::vector<double> getTransformedVector(const double time, const double step) {
         using std::sin, std::cos;
