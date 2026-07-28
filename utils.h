@@ -1,5 +1,6 @@
 #pragma once
 #include <numbers>
+#include <vector>
 
 namespace Utils {
     inline auto deg2Rad = [] (const double deg) {return deg * std::numbers::pi/180;};
@@ -22,5 +23,9 @@ namespace Utils {
         }
 
         return total;
+    }
+
+    inline double hypot4(const double a1, const double a2, const double a3, const double a4) {
+        return std::sqrt(std::pow(a1, 2)+std::pow(a2, 2) + std::pow(a3, 2) + std::pow(a4, 2));
     }
 }

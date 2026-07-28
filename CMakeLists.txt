@@ -9,4 +9,5 @@ add_executable(RBKinematicsHelpers main.cpp
         integrators.h
         utils.h
         PRV.h
-        vector3.h)
+        vector3.h
+        quaternion.h)

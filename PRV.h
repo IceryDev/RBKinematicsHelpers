@@ -58,4 +58,7 @@ public:
         out << "}, Angle: " << prv3.m_principalAngle << std::endl;
         return out;
     }
+
+    [[nodiscard]] double getAngle() const {return m_principalAngle;}
+    [[nodiscard]] const Vector3& getAxis() const {return m_axis;}
 };

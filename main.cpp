@@ -4,6 +4,7 @@
 #include "matrix3x3.h"
 #include "integrators.h"
 #include "PRV.h"
+#include "quaternion.h"
 #include "utils.h"
 using namespace Utils;
 
@@ -28,11 +29,11 @@ Matrix3x3 get321EulerAnglesDeg(const double deg1, const double deg2, const doubl
 
 
 int main() {
-    Matrix3x3 mat {1, 0, 0,
-                    0, -1, 0,
-                    0, 0, -1};
 
-    PRV3 rot {mat};
+    Matrix3x3 mat {get321EulerAnglesDeg(20, 10, -10)};
 
-    std::cout << rot;
+    Quaternion q {mat};
+
+
+    std::cout << q;
 }

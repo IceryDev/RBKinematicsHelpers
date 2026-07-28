@@ -61,6 +61,10 @@ public:
         return m_arr.at((row-1)*DIMENSION+(col-1));
     }
 
+    double operator[](const int row, const int col) const {
+        return m_arr.at((row-1)*DIMENSION+(col-1));
+    }
+
     friend std::ostream& operator<<(std::ostream& out, const Matrix3x3 mat) {
         for (int i = 0; i < DIMENSION*DIMENSION; ++i) {
 
