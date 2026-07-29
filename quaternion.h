@@ -196,11 +196,11 @@ public:
 
     friend Quaternion operator*(const Quaternion& q1, const Quaternion& q2) {
         Quaternion result {};
-        QMatrix leftM {q1, true};
+        QMatrix leftM {q2, true};
         for (int r = 1; r <= 4; r++){
             double cell = 0;
             for (int i = 1; i <= 4; i++) {
-                cell += leftM[r, i] * q2[i-1];
+                cell += leftM[r, i] * q1[i-1];
             }
             result[r-1] = cell;
         }

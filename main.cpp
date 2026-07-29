@@ -29,14 +29,13 @@ Matrix3x3 get321EulerAnglesDeg(const double deg1, const double deg2, const doubl
 
 
 int main() {
-    Quaternion q {0.774597,0.258199,0.516398,0.258199};
-    Quaternion q1 {0.359211,0.898027,0.179605,0.179605};
+    Quaternion qBN {0.774597,0.258199,0.516398,0.258199};
+    Quaternion qFB {0.359211,0.898027,0.179605,0.179605};
 
-    Quaternion q2 {0.359211,0.898027,0.179605,0.179605};
-    Quaternion q3 {-0.377964,0.755929,0.377964,0.377964};
+    Quaternion qFN2 {0.359211,0.898027,0.179605,0.179605};
+    Quaternion qBN2 {-0.377964,0.755929,0.377964,0.377964};
 
 
-    std::cout << q1*q << std::endl;
-    std::cout << (q2*(!q3))
-
+    std::cout << qFB*qBN << std::endl;
+    std::cout << (qFN2*(!qBN2));
 }
