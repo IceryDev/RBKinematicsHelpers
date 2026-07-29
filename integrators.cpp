@@ -2,11 +2,13 @@
 #include <cmath>
 #include "integrators.h"
 #include "matrix3x3.h"
+#include "quaternion.h"
 #include "utils.h"
 using namespace Utils;
 
 namespace Integrators {
     std::vector<double> eulerAngles321 {deg2Rad(40), deg2Rad(30), deg2Rad(80)};
+    Quaternion eulerParameters {0.408248,0,0.408248,0.816497};
 
     std::vector<double> getTransformedVector(const double time, const double step) {
         using std::sin, std::cos;
@@ -24,6 +26,11 @@ namespace Integrators {
         }
 
         return angularVelB;
+    }
+
+    Quaternion calculateNextStepQ(const double time, const double step) {
+        using std::sin, std::cos;
+        
     }
 
 }

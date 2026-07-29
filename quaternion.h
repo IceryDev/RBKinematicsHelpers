@@ -49,6 +49,7 @@ class Quaternion {
     double m_q3 {};
 
     bool m_optShortAngle {true};
+    bool m_isUnit {true};
 
 public:
     static constexpr int PARAM_COUNT {4};
@@ -57,7 +58,7 @@ public:
 
     Quaternion(const double q0, const double q1, const double q2, const double q3) :
         m_q0(q0), m_q1(q1), m_q2(q2), m_q3(q3) {
-        if (std::abs(Utils::hypot4(q0, q1, q2, q3)-1) > 0.01) throw std::invalid_argument("Error: Quaternion parameters do not satisfy quaternion constraints!");
+        if (std::abs(Utils::hypot4(q0, q1, q2, q3)-1) > 0.01) m_isUnit = false;
     }
 
     Quaternion(const std::initializer_list<double> list) {
@@ -67,7 +68,7 @@ public:
             (*this)[i] = list.begin()[i];
         }
 
-        if (std::abs(Utils::hypot4(m_q0, m_q1, m_q2, m_q3)-1) > 0.01) throw std::invalid_argument("Error: Quaternion parameters do not satisfy quaternion constraints!");
+        if (std::abs(Utils::hypot4(m_q0, m_q1, m_q2, m_q3)-1) > 0.01) m_isUnit = false;
     }
 
     explicit Quaternion(const PRV3& prv3) {
@@ -153,8 +154,14 @@ public:
         //std::cout << Utils::hypot4(m_q0, m_q1, m_q2, m_q3) << '\n'; //Debug
     }
 
+    void validate() {
+        m_isUnit = (std::abs(Utils::hypot4(m_q0, m_q1, m_q2, m_q3)-1) <= 1e-7);
+    }
+
     [[nodiscard]] Matrix3x3 getDCM() const {
         using std::pow;
+        if (!m_isUnit) throw std::invalid_argument("Error: A non-unit Quaternion does not describe attitude, therefore DCM cannot be generated!");
+
         return Matrix3x3 {
             pow(m_q0, 2)+pow(m_q1, 2)-pow(m_q2, 2)-pow(m_q3, 2),
             2*(m_q1*m_q2+m_q0*m_q3),
@@ -183,6 +190,7 @@ public:
     }
 
     double& operator[](const int index) {
+        m_isUnit = false;
         return const_cast<double&>(std::as_const(*this)[index]);
     }
 
@@ -194,20 +202,34 @@ public:
         return Quaternion {-m_q0, -m_q1, -m_q2, -m_q3};
     }
 
+    //Keep in mind the rotations are applied from left to right, so q1 first then q2 would be q2*q1
+    //Which would have a DCM equivalent of [FN(q)]=[FB(q2)][BN(q1)]
     friend Quaternion operator*(const Quaternion& q1, const Quaternion& q2) {
         Quaternion result {};
-        QMatrix leftM {q2, true};
+        QMatrix leftM {q1, true};
         for (int r = 1; r <= 4; r++){
             double cell = 0;
             for (int i = 1; i <= 4; i++) {
-                cell += leftM[r, i] * q1[i-1];
+                cell += leftM[r, i] * q2[i-1];
             }
             result[r-1] = cell;
         }
 
         if (result[0] < 0 && (q1.m_optShortAngle || q2.m_optShortAngle)) result = -result;
         if (result[0] > 0 && (!q1.m_optShortAngle && !q2.m_optShortAngle)) result = -result;
+
+        result.m_isUnit = (!q1.m_isUnit || !q2.m_isUnit);
         return result;
+    }
+
+    friend Quaternion operator*(const Quaternion& q, const double val) {
+        return Quaternion {q[0]*val, q[1]*val, q[2]*val, q[3]*val};
+    }
+
+    friend Quaternion operator/(const Quaternion& q, const double val) {
+        if (std::abs(val) < 1e-6) throw std::invalid_argument("Error: Cannot divide by zero!");
+
+        return Quaternion {q[0]/val, q[1]/val, q[2]/val, q[3]/val};
     }
 
     friend std::ostream& operator<<(std::ostream& out, const Quaternion& q) {
@@ -218,6 +240,15 @@ public:
     Quaternion& setShortAngleOption(const bool val) {
         m_optShortAngle = val;
         return (*this);
+    }
+
+    [[nodiscard]] QMatrix getLeftMatrix() const {
+        return QMatrix {(*this), true};
+    }
+
+    //This is only for testing purposes
+    [[nodiscard]] Quaternion _applyDKE(const Vector3& w) const {
+        return ((*this) * Quaternion {0, w[0], w[1], w[2]})/2;
     }
 
 };
