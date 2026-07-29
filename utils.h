@@ -1,6 +1,8 @@
 #pragma once
 #include <numbers>
 #include <vector>
+#include <cmath>
+#include <stdexcept>
 
 namespace Utils {
     inline auto deg2Rad = [] (const double deg) {return deg * std::numbers::pi/180;};

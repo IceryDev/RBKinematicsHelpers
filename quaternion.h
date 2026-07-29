@@ -2,19 +2,58 @@
 #include <cmath>
 #include <stdexcept>
 #include <initializer_list>
+#include <utility>
 
 #include "PRV.h"
 #include "utils.h"
 
 class Quaternion {
 
+    class QMatrix {
+        static constexpr int DIMENSION {4};
+
+        static constexpr std::array<int, 16> LEFT_MAT {
+            0, -1, -2, -3,
+            1,  0, -3,  2,
+            2,  3,  0, -1,
+            3, -2,  1,  0
+        };
+
+        static constexpr std::array<int, 16> RIGHT_MAT {
+            0, -1, -2, -3,
+            1,  0,  3, -2,
+            2, -3,  0,  1,
+            3,  2, -1,  0
+        };
+
+        std::vector<double> m_innerMatrix {};
+
+    public:
+        QMatrix(const Quaternion& q, const bool direction) { //true for left, false for right, handled internally
+            auto& usedMat {(direction) ? LEFT_MAT : RIGHT_MAT};
+            m_innerMatrix.resize(DIMENSION*DIMENSION);
+
+            for (int i = 0; i < DIMENSION*DIMENSION; ++i) {
+                m_innerMatrix.at(i) = ((usedMat.at(i) >= 0) ? 1 : -1) * q[std::abs(usedMat.at(i))];
+            }
+        }
+
+        double& operator[](const int row, const int col) {
+            return m_innerMatrix.at((row-1)*DIMENSION+(col-1));
+        }
+    };
+
     double m_q0 {};
     double m_q1 {};
     double m_q2 {};
     double m_q3 {};
 
+    bool m_optShortAngle {true};
+
 public:
     static constexpr int PARAM_COUNT {4};
+
+    Quaternion() = default;
 
     Quaternion(const double q0, const double q1, const double q2, const double q3) :
         m_q0(q0), m_q1(q1), m_q2(q2), m_q3(q3) {
@@ -75,7 +114,6 @@ public:
             return (mat[2, 3]+mat[3, 2]);
         };
 
-        maxVal = sqrt(maxVal);
         switch (maxIndex) {
             case 0:
                 (*this)[1] = q0q1();
@@ -101,9 +139,18 @@ public:
                 throw std::logic_error("Error: This wasn't supposed to happen! Check your logic!");
         }
 
+        maxVal = sqrt(maxVal);
+        (*this)[maxIndex] = maxVal;
+
         for (int i = 0; i < PARAM_COUNT; ++i) {
-            (*this)[i] /= 4*(maxVal);
+            if (i == maxIndex) continue;
+            (*this)[i] /= 4*maxVal;
         }
+
+        if ((*this)[0] < 0 && m_optShortAngle) (*this) = -(*this);
+        if ((*this)[0] > 0 && !m_optShortAngle) (*this) = -(*this);
+
+        //std::cout << Utils::hypot4(m_q0, m_q1, m_q2, m_q3) << '\n'; //Debug
     }
 
     [[nodiscard]] Matrix3x3 getDCM() const {
@@ -125,7 +172,7 @@ public:
         return getDCM();
     }
 
-    double& operator[](const int index) {
+    const double& operator[](const int index) const {
         switch (index) {
             case 0: return m_q0;
             case 1: return m_q1;
@@ -135,9 +182,42 @@ public:
         }
     }
 
-    friend std::ostream& operator<<(std::ostream& out, const Quaternion q) {
-        out << std::format("Quaternion [{}, {}, {}, {}]\n", q.m_q0, q.m_q1, q.m_q2, q.m_q3);
+    double& operator[](const int index) {
+        return const_cast<double&>(std::as_const(*this)[index]);
+    }
+
+    Quaternion operator!() const {
+        return Quaternion {m_q0, -m_q1, -m_q2, -m_q3};
+    }
+
+    Quaternion operator-() const {
+        return Quaternion {-m_q0, -m_q1, -m_q2, -m_q3};
+    }
+
+    friend Quaternion operator*(const Quaternion& q1, const Quaternion& q2) {
+        Quaternion result {};
+        QMatrix leftM {q1, true};
+        for (int r = 1; r <= 4; r++){
+            double cell = 0;
+            for (int i = 1; i <= 4; i++) {
+                cell += leftM[r, i] * q2[i-1];
+            }
+            result[r-1] = cell;
+        }
+
+        if (result[0] < 0 && (q1.m_optShortAngle || q2.m_optShortAngle)) result = -result;
+        if (result[0] > 0 && (!q1.m_optShortAngle && !q2.m_optShortAngle)) result = -result;
+        return result;
+    }
+
+    friend std::ostream& operator<<(std::ostream& out, const Quaternion& q) {
+        out << std::format("Quaternion [{}, {}, {}, {}]", q.m_q0, q.m_q1, q.m_q2, q.m_q3);
         return out;
+    }
+
+    Quaternion& setShortAngleOption(const bool val) {
+        m_optShortAngle = val;
+        return (*this);
     }
 
 };
