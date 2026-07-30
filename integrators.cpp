@@ -9,6 +9,7 @@ using namespace Utils;
 namespace Integrators {
     std::vector<double> eulerAngles321 {0.7853975 /*deg2Rad(40)*/, 0.3398363 /*deg2Rad(30)*/, 2.3561951 /*deg2Rad(80)*/};
     Quaternion eulerParameters {0.408248,0,0.408248,0.816497};
+    Vector3 classicalRodrigues {0.4,0.2,-0.1};
 
     std::vector<double> getTransformedVector(const double time, const double step) {
         using std::sin, std::cos;
@@ -37,4 +38,13 @@ namespace Integrators {
         return eulerParameters._applyDKE(angularVel)*step;
     }
 
+    Vector3 calculateNextStepCRP(const double time, const double step) {
+        using std::sin, std::cos;
+
+        Vector3 angularVel {sin(0.1 * time), 0.01, cos(0.1 * time)};
+        angularVel = angularVel * deg2Rad(3);
+
+        return ((Matrix3x3::identity()+Matrix3x3::skewSymmetric(classicalRodrigues)+Matrix3x3::outerProduct(classicalRodrigues)).divBy(2)).vectorTransform(angularVel) * step;
+
+    }
 }

@@ -5,9 +5,11 @@
 namespace Integrators {
     extern std::vector<double> eulerAngles321;
     extern Quaternion eulerParameters;
+    extern Vector3 classicalRodrigues;
 
     std::vector<double> getTransformedVector(double time, double step);
     Quaternion calculateNextStepQ(double time, double step);
+    Vector3 calculateNextStepCRP(double time, double step);
 
     inline auto addToState = [] (std::vector<double>& vals, const std::vector<double>& addend) -> std::vector<double>& {
         vals.at(0) += addend.at(0);
@@ -17,17 +19,30 @@ namespace Integrators {
         return vals;
     };
 
-    //These two functions below are question specific
-    //If you get errors, __hypot3 is implementation defined, that is probably the reason
+    //These three functions below are question specific
     inline auto targetFuncEA = [] (const std::vector<double>& vals) {
-        return std::__hypot3(vals.at(0), vals.at(1), vals.at(2));
+        return std::hypot(vals.at(0), vals.at(1), vals.at(2));
     };
 
-    inline auto targetFunc = [] (const Quaternion& vals) {
-        return std::__hypot3(vals[1], vals[2], vals[3]);
+    inline auto targetFuncQ = [] (const Quaternion& vals) {
+        return std::hypot(vals[1], vals[2], vals[3]);
     };
 
-    inline auto integrator(const double duration, const double step) {
+    inline auto targetFuncCRP = [] (const Vector3& vals) {
+        return std::hypot(vals[1], vals[2], vals[0]);
+    };
+
+    inline auto integratorCRP(const double duration, const double step) {
+        double t {0};
+        while (t < duration) {
+            classicalRodrigues += calculateNextStepCRP(t, step);
+            t += step;
+        }
+
+        return targetFuncCRP(classicalRodrigues);
+    }
+
+    inline auto integratorQ(const double duration, const double step) {
         double t {0};
         while (t < duration) {
             //Euler Estimation
@@ -37,7 +52,7 @@ namespace Integrators {
             t += step;
         }
 
-        return targetFunc(eulerParameters);
+        return targetFuncQ(eulerParameters);
     }
 
     inline auto integratorEA(const double duration, const double step) {

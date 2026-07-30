@@ -23,6 +23,13 @@ public:
         }
     }
 
+    Vector3& operator+=(const Vector3& v) {
+        m_x += v[0];
+        m_y += v[1];
+        m_z += v[2];
+        return *this;
+    }
+
     //Cross product
     friend Vector3 operator%(const Vector3& v1, const Vector3& v2) {
 

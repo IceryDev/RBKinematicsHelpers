@@ -31,20 +31,7 @@ Matrix3x3 get321EulerAnglesDeg(const double deg1, const double deg2, const doubl
 
 int main() {
 
-    CRP c {0.1, 0.2, 0.3};
 
-    std::cout << c.getDCM() << std::endl;
-
-    Matrix3x3 m {0.333333, -0.666667, 0.666667,
-                 0.871795, 0.487179, 0.0512821,
-                 -0.358974, 0.564103, 0.74359};
-
-    CRP c1 {m};
-    std::cout << c1 << std::endl;
-
-    CRP c11 {-0.3,0.3,0.1};
-    CRP c12 {-0.1,-0.2,-0.3};
-
-    std::cout << c11 + c12 << std::endl;
+    std::cout << Integrators::integratorCRP(42, 0.0001) << std::endl;
 
 }

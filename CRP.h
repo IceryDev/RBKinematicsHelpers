@@ -19,6 +19,8 @@ public:
     CRP(const double q1, const double q2, const double q3) :
         m_q1(q1), m_q2(q2), m_q3(q3) {}
 
+    explicit CRP(const Vector3& v) : m_q1(v[0]), m_q2(v[1]), m_q3(v[2]) {}
+
     explicit CRP(Matrix3x3& mat) {
         const double coef2 {mat.trace()+1};
 
