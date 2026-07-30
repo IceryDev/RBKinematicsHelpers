@@ -53,6 +53,10 @@ public:
         return Vector3{v[0]*scalar, v[1]*scalar, v[2]*scalar};
     }
 
+    friend Vector3 operator*(const Vector3& v, const double scalar) {
+        return scalar * v;
+    }
+
     friend Vector3 operator/(const Vector3& v, const double scalar) {
         return Vector3{v[0]/scalar, v[1]/scalar, v[2]/scalar};
     }

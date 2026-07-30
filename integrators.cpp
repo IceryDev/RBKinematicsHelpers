@@ -7,7 +7,7 @@
 using namespace Utils;
 
 namespace Integrators {
-    std::vector<double> eulerAngles321 {deg2Rad(40), deg2Rad(30), deg2Rad(80)};
+    std::vector<double> eulerAngles321 {0.7853975 /*deg2Rad(40)*/, 0.3398363 /*deg2Rad(30)*/, 2.3561951 /*deg2Rad(80)*/};
     Quaternion eulerParameters {0.408248,0,0.408248,0.816497};
 
     std::vector<double> getTransformedVector(const double time, const double step) {
@@ -30,7 +30,11 @@ namespace Integrators {
 
     Quaternion calculateNextStepQ(const double time, const double step) {
         using std::sin, std::cos;
-        
+
+        Vector3 angularVel {sin(0.1 * time), 0.01, cos(0.1 * time)};
+        angularVel = angularVel * deg2Rad(20);
+
+        return eulerParameters._applyDKE(angularVel)*step;
     }
 
 }

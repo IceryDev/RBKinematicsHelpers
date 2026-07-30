@@ -7,6 +7,7 @@ namespace Integrators {
     extern Quaternion eulerParameters;
 
     std::vector<double> getTransformedVector(double time, double step);
+    Quaternion calculateNextStepQ(double time, double step);
 
     inline auto addToState = [] (std::vector<double>& vals, const std::vector<double>& addend) -> std::vector<double>& {
         vals.at(0) += addend.at(0);
@@ -16,6 +17,7 @@ namespace Integrators {
         return vals;
     };
 
+    //These two functions below are question specific
     //If you get errors, __hypot3 is implementation defined, that is probably the reason
     inline auto targetFuncEA = [] (const std::vector<double>& vals) {
         return std::__hypot3(vals.at(0), vals.at(1), vals.at(2));
@@ -28,7 +30,18 @@ namespace Integrators {
     inline auto integrator(const double duration, const double step) {
         double t {0};
         while (t < duration) {
-            addToState(eulerParameters, getTransformedVector(t, step));
+            eulerParameters = eulerParameters + calculateNextStepQ(t, step);
+            eulerParameters.normalise();
+            t += step;
+        }
+
+        return targetFunc(eulerParameters);
+    }
+
+    inline auto integratorEA(const double duration, const double step) {
+        double t {0};
+        while (t < duration) {
+            addToState(eulerAngles321, getTransformedVector(t, step));
             t += step;
         }
 

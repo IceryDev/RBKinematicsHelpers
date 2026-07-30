@@ -29,13 +29,18 @@ Matrix3x3 get321EulerAnglesDeg(const double deg1, const double deg2, const doubl
 
 
 int main() {
-    Quaternion qBN {0.774597,0.258199,0.516398,0.258199};
-    Quaternion qFB {0.359211,0.898027,0.179605,0.179605};
 
-    Quaternion qFN2 {0.359211,0.898027,0.179605,0.179605};
-    Quaternion qBN2 {-0.377964,0.755929,0.377964,0.377964};
+    using namespace Integrators;
+    std::cout << integrator(42, 0.0001) << std::endl;
+    eulerParameters.validate();
+    std::cout << std::boolalpha << eulerParameters.isValid() << std::endl;
+    std::cout << eulerParameters << std::endl;
 
+    integratorEA(42, 0.1);
 
-    std::cout << qFB*qBN << std::endl;
-    std::cout << (qFN2*(!qBN2));
+    Matrix3x3 m {get321EulerAngles(eulerAngles321.at(0), eulerAngles321.at(1), eulerAngles321.at(2))};
+    Quaternion q {m};
+
+    std::cout << q << std::endl;
+
 }

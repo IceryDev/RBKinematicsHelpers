@@ -158,6 +158,25 @@ public:
         m_isUnit = (std::abs(Utils::hypot4(m_q0, m_q1, m_q2, m_q3)-1) <= 1e-7);
     }
 
+    [[nodiscard]] bool isValid() const {
+        return m_isUnit;
+    }
+
+    [[nodiscard]] double norm() const {
+        return Utils::hypot4(m_q0, m_q1, m_q2, m_q3);
+    }
+
+    void normalise() {
+        const double n {norm()};
+
+        m_q0 /= n;
+        m_q1 /= n;
+        m_q2 /= n;
+        m_q3 /= n;
+
+        validate();
+    }
+
     [[nodiscard]] Matrix3x3 getDCM() const {
         using std::pow;
         if (!m_isUnit) throw std::invalid_argument("Error: A non-unit Quaternion does not describe attitude, therefore DCM cannot be generated!");
@@ -189,11 +208,6 @@ public:
         }
     }
 
-    double& operator[](const int index) {
-        m_isUnit = false;
-        return const_cast<double&>(std::as_const(*this)[index]);
-    }
-
     Quaternion operator!() const {
         return Quaternion {m_q0, -m_q1, -m_q2, -m_q3};
     }
@@ -215,10 +229,14 @@ public:
             result[r-1] = cell;
         }
 
-        if (result[0] < 0 && (q1.m_optShortAngle || q2.m_optShortAngle)) result = -result;
-        if (result[0] > 0 && (!q1.m_optShortAngle && !q2.m_optShortAngle)) result = -result;
+        result.validate();
 
-        result.m_isUnit = (!q1.m_isUnit || !q2.m_isUnit);
+        if (q1.m_isUnit && q2.m_isUnit) {
+            if (result[0] < 0 && (q1.m_optShortAngle || q2.m_optShortAngle)) result = -result;
+            if (result[0] > 0 && (!q1.m_optShortAngle && !q2.m_optShortAngle)) result = -result;
+        }
+
+
         return result;
     }
 
@@ -226,10 +244,18 @@ public:
         return Quaternion {q[0]*val, q[1]*val, q[2]*val, q[3]*val};
     }
 
+    friend Quaternion operator*(const double val, const Quaternion& q) {
+        return q * val;
+    }
+
     friend Quaternion operator/(const Quaternion& q, const double val) {
         if (std::abs(val) < 1e-6) throw std::invalid_argument("Error: Cannot divide by zero!");
 
         return Quaternion {q[0]/val, q[1]/val, q[2]/val, q[3]/val};
+    }
+
+    friend Quaternion operator+(const Quaternion& q1, const Quaternion& q2) {
+        return Quaternion {q1[0]+q2[0], q1[1]+q2[1], q1[2]+q2[2], q1[3]+q2[3]};
     }
 
     friend std::ostream& operator<<(std::ostream& out, const Quaternion& q) {
@@ -251,4 +277,9 @@ public:
         return ((*this) * Quaternion {0, w[0], w[1], w[2]})/2;
     }
 
+protected:
+    double& operator[](const int index) {
+        m_isUnit = false;
+        return const_cast<double&>(std::as_const(*this)[index]);
+    }
 };
