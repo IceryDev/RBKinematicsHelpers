@@ -65,6 +65,14 @@ public:
         return m_arr.at((row-1)*DIMENSION+(col-1));
     }
 
+    Matrix3x3& divBy(const double scalar) {
+        if (std::abs(scalar) < 1e-7) throw std::invalid_argument("Error: Cannot divide by zero!");
+        for (auto& val: m_arr) {
+            val /= scalar;
+        }
+        return *this;
+    }
+
     friend std::ostream& operator<<(std::ostream& out, const Matrix3x3 mat) {
         for (int i = 0; i < DIMENSION*DIMENSION; ++i) {
 

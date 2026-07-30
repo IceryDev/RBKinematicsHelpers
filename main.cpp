@@ -6,6 +6,7 @@
 #include "PRV.h"
 #include "quaternion.h"
 #include "utils.h"
+#include "CRP.h"
 using namespace Utils;
 
 
@@ -30,17 +31,20 @@ Matrix3x3 get321EulerAnglesDeg(const double deg1, const double deg2, const doubl
 
 int main() {
 
-    using namespace Integrators;
-    std::cout << integrator(42, 0.0001) << std::endl;
-    eulerParameters.validate();
-    std::cout << std::boolalpha << eulerParameters.isValid() << std::endl;
-    std::cout << eulerParameters << std::endl;
+    CRP c {0.1, 0.2, 0.3};
 
-    integratorEA(42, 0.1);
+    std::cout << c.getDCM() << std::endl;
 
-    Matrix3x3 m {get321EulerAngles(eulerAngles321.at(0), eulerAngles321.at(1), eulerAngles321.at(2))};
-    Quaternion q {m};
+    Matrix3x3 m {0.333333, -0.666667, 0.666667,
+                 0.871795, 0.487179, 0.0512821,
+                 -0.358974, 0.564103, 0.74359};
 
-    std::cout << q << std::endl;
+    CRP c1 {m};
+    std::cout << c1 << std::endl;
+
+    CRP c11 {-0.3,0.3,0.1};
+    CRP c12 {-0.1,-0.2,-0.3};
+
+    std::cout << c11 + c12 << std::endl;
 
 }

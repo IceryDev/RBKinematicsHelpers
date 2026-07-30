@@ -30,7 +30,9 @@ namespace Integrators {
     inline auto integrator(const double duration, const double step) {
         double t {0};
         while (t < duration) {
+            //Euler Estimation
             eulerParameters = eulerParameters + calculateNextStepQ(t, step);
+            //Get rid of errors
             eulerParameters.normalise();
             t += step;
         }

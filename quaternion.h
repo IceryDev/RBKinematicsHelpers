@@ -4,6 +4,7 @@
 #include <initializer_list>
 #include <utility>
 
+#include "CRP.h"
 #include "PRV.h"
 #include "utils.h"
 
@@ -177,25 +178,25 @@ public:
         validate();
     }
 
-    [[nodiscard]] Matrix3x3 getDCM() const {
+    [[nodiscard]] static Matrix3x3 getDCM(const Quaternion& q) {
         using std::pow;
-        if (!m_isUnit) throw std::invalid_argument("Error: A non-unit Quaternion does not describe attitude, therefore DCM cannot be generated!");
+        if (!q.m_isUnit) throw std::invalid_argument("Error: A non-unit Quaternion does not describe attitude, therefore DCM cannot be generated!");
 
         return Matrix3x3 {
-            pow(m_q0, 2)+pow(m_q1, 2)-pow(m_q2, 2)-pow(m_q3, 2),
-            2*(m_q1*m_q2+m_q0*m_q3),
-            2*(m_q1*m_q3-m_q0*m_q2),
-            2*(m_q1*m_q2-m_q0*m_q3),
-            pow(m_q0, 2)-pow(m_q1, 2)+pow(m_q2, 2)-pow(m_q3, 2),
-            2*(m_q2*m_q3+m_q0*m_q1),
-            2*(m_q1*m_q3+m_q0*m_q2),
-            2*(m_q2*m_q3-m_q0*m_q1),
-            pow(m_q0, 2)-pow(m_q1, 2)-pow(m_q2, 2)+pow(m_q3, 2)
+            pow(q.m_q0, 2)+pow(q.m_q1, 2)-pow(q.m_q2, 2)-pow(q.m_q3, 2),
+            2*(q.m_q1*q.m_q2+q.m_q0*q.m_q3),
+            2*(q.m_q1*q.m_q3-q.m_q0*q.m_q2),
+            2*(q.m_q1*q.m_q2-q.m_q0*q.m_q3),
+            pow(q.m_q0, 2)-pow(q.m_q1, 2)+pow(q.m_q2, 2)-pow(q.m_q3, 2),
+            2*(q.m_q2*q.m_q3+q.m_q0*q.m_q1),
+            2*(q.m_q1*q.m_q3+q.m_q0*q.m_q2),
+            2*(q.m_q2*q.m_q3-q.m_q0*q.m_q1),
+            pow(q.m_q0, 2)-pow(q.m_q1, 2)-pow(q.m_q2, 2)+pow(q.m_q3, 2)
         };
     }
 
     explicit operator Matrix3x3() const {
-        return getDCM();
+        return getDCM(*this);
     }
 
     const double& operator[](const int index) const {
@@ -216,7 +217,7 @@ public:
         return Quaternion {-m_q0, -m_q1, -m_q2, -m_q3};
     }
 
-    //Keep in mind the rotations are applied from left to right, so q1 first then q2 would be q2*q1
+    //Keep in mind the rotations are applied from left to right, so q1 first then q2 would be q2*q1 (Hamilton convention)
     //Which would have a DCM equivalent of [FN(q)]=[FB(q2)][BN(q1)]
     friend Quaternion operator*(const Quaternion& q1, const Quaternion& q2) {
         Quaternion result {};
@@ -268,7 +269,8 @@ public:
         return (*this);
     }
 
-    [[nodiscard]] QMatrix getLeftMatrix() const {
+    //Only for test
+    [[nodiscard]] QMatrix _getLeftMatrix() const {
         return QMatrix {(*this), true};
     }
 
@@ -282,4 +284,7 @@ protected:
         m_isUnit = false;
         return const_cast<double&>(std::as_const(*this)[index]);
     }
+
+private:
+    friend Matrix3x3 CRP::getDCM() const;
 };
