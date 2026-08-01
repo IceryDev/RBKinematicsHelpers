@@ -30,6 +30,10 @@ public:
         return *this;
     }
 
+    [[nodiscard]] double norm() const {
+        return std::hypot(m_x, m_y, m_z);
+    }
+
     //Cross product
     friend Vector3 operator%(const Vector3& v1, const Vector3& v2) {
 

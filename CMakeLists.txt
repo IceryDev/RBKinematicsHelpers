@@ -12,4 +12,5 @@ add_executable(RBKinematicsHelpers main.cpp
         vector3.h
         quaternion.h
         CRP.h
-        CRP.cpp)
+        CRP.cpp
+        MRP.h)

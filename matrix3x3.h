@@ -44,6 +44,14 @@ public:
         };
     }
 
+    static Matrix3x3 transpose(const Matrix3x3& m) {
+        return Matrix3x3 {
+            m[1, 1], m[2, 1], m[3, 1],
+            m[1, 2], m[2, 2], m[3, 2],
+            m[1, 3], m[2, 3], m[3, 3]
+        };
+    }
+
     Matrix3x3& transpose() {
         std::swap((*this)[1, 2], (*this)[2, 1]);
         std::swap((*this)[1, 3], (*this)[3, 1]);
@@ -114,6 +122,25 @@ public:
             m1[3, 1]+m2[3, 1], m1[3, 2]+m2[3, 2], m1[3, 3]+m2[3, 3]
         };
     }
+
+    friend Matrix3x3 operator-(const Matrix3x3& m1, const Matrix3x3& m2) {
+        //Didn't use a loop for copy elision. Named variables disable elision
+        return Matrix3x3 {
+            m1[1, 1]-m2[1, 1], m1[1, 2]-m2[1, 2], m1[1, 3]-m2[1, 3],
+            m1[2, 1]-m2[2, 1], m1[2, 2]-m2[2, 2], m1[2, 3]-m2[2, 3],
+            m1[3, 1]-m2[3, 1], m1[3, 2]-m2[3, 2], m1[3, 3]-m2[3, 3]
+        };
+    }
+
+    friend Matrix3x3 operator*(const double scalar, const Matrix3x3& m) {
+        //Didn't use a loop for copy elision. Named variables disable elision
+        return Matrix3x3 {
+            scalar*m[1, 1], scalar*m[1, 2], scalar*m[1, 3],
+            scalar*m[2, 1], scalar*m[2, 2], scalar*m[2, 3],
+            scalar*m[3, 1], scalar*m[3, 2], scalar*m[3, 3]
+        };
+    }
+
 
     Matrix3x3& divBy(const double scalar) {
         if (std::abs(scalar) < 1e-7) throw std::invalid_argument("Error: Cannot divide by zero!");
