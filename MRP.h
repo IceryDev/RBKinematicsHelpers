@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include <format>
+#include <utility>
 #include "matrix3x3.h"
 
 //Modified Rodrigues Parameters
@@ -17,6 +18,14 @@ public:
 
     MRP (const double s1, const double s2, const double s3) : m_s1(s1), m_s2(s2), m_s3(s3) {}
     explicit MRP (const Vector3& v) : m_s1(v[0]), m_s2(v[1]), m_s3(v[2]) {}
+
+    MRP(const std::initializer_list<double> entries) {
+        if (entries.size() > 3) throw std::length_error("Error: MRP initialised with more than 3 arguments!");
+
+        for (int i = 0; i < entries.size(); ++i) {
+            (*this)[i+1] = entries.begin()[i];
+        }
+    }
 
     explicit MRP (Matrix3x3& mat) {
         //Assumes a proper DCM, check orthonormality and det(C)=1 for right handed-ness before.
@@ -44,6 +53,10 @@ public:
         return (id3x3) + ((8*(skewSym.matMul(skewSym)))-((4*(1-norm2()))*skewSym)).divBy(std::pow(1+norm2(), 2));
     }
 
+    [[nodiscard]] Vector3 getVec() const {
+        return Vector3 {m_s1, m_s2, m_s3};
+    }
+
     [[nodiscard]] double norm2() const {
         using std::pow;
         return pow(m_s1, 2)+pow(m_s2, 2)+pow(m_s3, 2);
@@ -68,6 +81,14 @@ public:
         MRP tmp {m};
         tmp.swapSet();
         return tmp;
+    }
+
+    //This is only for DKE currently
+    MRP& operator+=(const Vector3& v) {
+        m_s1 += v[0];
+        m_s2 += v[1];
+        m_s3 += v[2];
+        return *this;
     }
 
     const double& operator[](const int index) const {

@@ -1,15 +1,18 @@
 #pragma once
 #include "matrix3x3.h"
+#include "MRP.h"
 #include "quaternion.h"
 
 namespace Integrators {
     extern std::vector<double> eulerAngles321;
     extern Quaternion eulerParameters;
     extern Vector3 classicalRodrigues;
+    extern MRP modifiedRodrigues;
 
     std::vector<double> getTransformedVector(double time, double step);
     Quaternion calculateNextStepQ(double time, double step);
     Vector3 calculateNextStepCRP(double time, double step);
+    Vector3 calculateNextStepMRP(double time, double step);
 
     inline auto addToState = [] (std::vector<double>& vals, const std::vector<double>& addend) -> std::vector<double>& {
         vals.at(0) += addend.at(0);
@@ -40,6 +43,17 @@ namespace Integrators {
         }
 
         return targetFuncCRP(classicalRodrigues);
+    }
+
+    inline auto integratorMRP(const double duration, const double step) {
+        double t {0};
+        while (t < duration) {
+            modifiedRodrigues += calculateNextStepMRP(t, step);
+            if (modifiedRodrigues.getZone() == -1) modifiedRodrigues.swapSet();
+            t += step;
+        }
+
+        return targetFuncCRP(modifiedRodrigues.getVec());
     }
 
     inline auto integratorQ(const double duration, const double step) {

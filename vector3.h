@@ -34,6 +34,11 @@ public:
         return std::hypot(m_x, m_y, m_z);
     }
 
+    [[nodiscard]] double norm2() const {
+        using std::pow;
+        return pow(m_x, 2) + pow(m_y, 2) + pow(m_z, 2);
+    }
+
     //Cross product
     friend Vector3 operator%(const Vector3& v1, const Vector3& v2) {
 

@@ -32,12 +32,7 @@ Matrix3x3 get321EulerAnglesDeg(const double deg1, const double deg2, const doubl
 
 int main() {
 
-    MRP sRB {-0.1, 0.3, 0.1};
-    MRP sBN {0.1, 0.2, 0.3};
-    std::cout << sRB + sBN << std::endl;
-
-    MRP s1BN {0.1, 0.2, 0.3};
-    MRP s1RN {0.5, 0.3, 0.1};
-    std::cout << s1BN - s1RN << std::endl;
+    std::cout << Integrators::integratorMRP(42, 0.001) << std::endl;
+    std::cout << Integrators::modifiedRodrigues << std::endl;
 
 }
