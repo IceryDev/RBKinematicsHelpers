@@ -1,6 +1,9 @@
 #pragma once
 
+#include <assert.h>
 #include <iostream>
+
+#include "matrix.h"
 #include "matrix3x3.h"
 #include "vector3.h"
 
@@ -27,5 +30,23 @@ namespace AttitudeSolvers {
         return matBN;
     }
 
+    inline Matrix getDevenportKMatrix(const std::vector<double>& weights, const std::vector<Vector3>& bodyFrameVectors, const std::vector<Vector3>& inertialVectors) {
+        assert(weights.size() == bodyFrameVectors.size() && bodyFrameVectors.size() == inertialVectors.size());
 
+        Matrix3x3 bMatrix {};
+        for (std::size_t i {0}; i < weights.size(); ++i) {
+            bMatrix += weights.at(i)*(Matrix3x3::outerProduct(bodyFrameVectors.at(i), inertialVectors.at(i)));
+        }
+
+        const double sigma {bMatrix.trace()};
+        Matrix3x3 sMatrix {(bMatrix+Matrix3x3::transpose(bMatrix))-(sigma*Matrix3x3::identity())};
+        Vector3 zMatrix {bMatrix[2, 3]-bMatrix[3, 2], bMatrix[3, 1]-bMatrix[1, 3], bMatrix[1, 2]-bMatrix[2, 1]};
+
+        return Matrix {{
+            {sigma, zMatrix[0], zMatrix[1], zMatrix[2]},
+            {zMatrix[0], sMatrix[1, 1], sMatrix[1, 2], sMatrix[1, 3]},
+            {zMatrix[1], sMatrix[2, 1], sMatrix[2, 2], sMatrix[2, 3]},
+            {zMatrix[2], sMatrix[3, 1], sMatrix[3, 2], sMatrix[3, 3]}
+        }};
+    }
 }

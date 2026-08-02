@@ -55,6 +55,14 @@ public:
         };
     }
 
+    static Matrix3x3 outerProduct(const Vector3& v1, const Vector3& v2) {
+        return Matrix3x3 {
+            v1[0]*v2[0], v1[0]*v2[1], v1[0]*v2[2],
+            v1[1]*v2[0], v1[1]*v2[1], v1[1]*v2[2],
+            v1[2]*v2[0], v1[2]*v2[1], v1[2]*v2[2]
+        };
+    }
+
     static Matrix3x3 transpose(const Matrix3x3& m) {
         return Matrix3x3 {
             m[1, 1], m[2, 1], m[3, 1],
@@ -123,6 +131,13 @@ public:
 
     double operator[](const int row, const int col) const {
         return m_arr.at((row-1)*DIMENSION+(col-1));
+    }
+
+    Matrix3x3& operator+=(const Matrix3x3& m) {
+        for (std::size_t i {0}; i < m_arr.size(); ++i) {
+            m_arr[i] += m.m_arr[i];
+        }
+        return *this;
     }
 
     friend Matrix3x3 operator+(const Matrix3x3& m1, const Matrix3x3& m2) {

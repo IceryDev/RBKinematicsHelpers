@@ -35,23 +35,18 @@ Matrix3x3 get321EulerAnglesDeg(const double deg1, const double deg2, const doubl
 
 int main() {
 
-    Matrix m {
-        {
-            {1, 2, 3, 4},
-            {2, 3, 4, 5},
-            {5, 6, 7, 8},
-            {7, 8, 9, 10}
-        }
+    std::vector<double> weights {1, 1};
+    std::vector<Vector3> bodyVec {
+        {0.8273, 0.5541, -0.0920},
+        {-0.8285, 0.5522, -0.0955}
+    };
+    std::vector<Vector3> inertialVec {
+        {-0.1517, -0.9669, 0.2050},
+        {-0.8393, 0.4494, -0.3044}
     };
 
-    Matrix m1 {
-            {
-                {1, 0, 0, 0},
-                {0, 1, 0, 0},
-                {0, 0, 1, 0},
-                {0, 0, 0, 1}
-            }
-    };
-
-    std::cout << m.matMul(m1) << std::endl;
+    Quaternion v {-0.131949323884729, 4.202477253067334, -2.508412840978479, 1};
+    v.normalise();
+    v.validate();
+    std::cout << Quaternion::getDCM(v) << std::endl;
 }
