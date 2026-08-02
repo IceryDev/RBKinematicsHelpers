@@ -14,4 +14,5 @@ add_executable(RBKinematicsHelpers main.cpp
         CRP.h
         CRP.cpp
         MRP.h
-        attitudeSolvers.h)
+        attitudeSolvers.h
+        matrix.h)
