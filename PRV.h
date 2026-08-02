@@ -17,7 +17,7 @@ public:
 
     PRV3 (const Vector3& axis, const double angleRad) : m_axis {axis}, m_principalAngle {angleRad} {}
 
-    explicit PRV3 (Matrix3x3& mat) {
+    explicit PRV3 (const Matrix3x3& mat) {
         //No orthonormality check here, yet. Assumes it is a proper DCM, I do not handle the singularities here.
         m_principalAngle = std::acos((mat.trace()-1)/2);
         m_axis = {
@@ -27,6 +27,7 @@ public:
         };
 
         m_axis = m_axis / (2*std::sin(m_principalAngle));
+        m_axis.normalise();
     }
 
     friend PRV3 operator+(const PRV3& p1, const PRV3 p2) {

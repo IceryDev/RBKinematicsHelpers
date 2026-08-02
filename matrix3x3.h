@@ -1,6 +1,7 @@
 #pragma once
 #include <vector>
 #include <array>
+#include <format>
 #include <iostream>
 
 #include "vector3.h"
@@ -17,6 +18,16 @@ public:
         if (entries.size() > DIMENSION*DIMENSION) throw std::length_error("Error: Matrix3x3 initialised with more than 9 arguments!");
 
         std::ranges::copy(entries, m_arr.begin());
+    }
+
+    Matrix3x3(const Vector3& v1, const Vector3& v2, const Vector3& v3) {
+        for (int i = 0; i < 3; ++i) {
+            m_arr[i] = v1[i];
+            m_arr[i+3] = v2[i];
+            m_arr[i+6] = v3[i];
+        }
+
+        this->transpose();
     }
 
     static Matrix3x3 identity() {
@@ -59,7 +70,7 @@ public:
         return *this;
     }
 
-    double trace() {
+    [[nodiscard]] double trace() const {
         return (*this)[1, 1] + (*this)[2, 2] + (*this)[3, 3];
     }
 
@@ -151,11 +162,16 @@ public:
     }
 
     friend std::ostream& operator<<(std::ostream& out, const Matrix3x3 mat) {
-        for (int i = 0; i < DIMENSION*DIMENSION; ++i) {
-
-            out << mat.m_arr.at(i) << ' ';
-            if (i%3 == 2) out << '\n';
-        }
+        out << std::format("Matrix3x3: [\n  {}, {}, {}\n  {}, {}, {}\n  {}, {}, {}\n]",
+            mat.m_arr.at(0),
+            mat.m_arr.at(1),
+            mat.m_arr.at(2),
+            mat.m_arr.at(3),
+            mat.m_arr.at(4),
+            mat.m_arr.at(5),
+            mat.m_arr.at(6),
+            mat.m_arr.at(7),
+            mat.m_arr.at(8));
 
         return out;
     }

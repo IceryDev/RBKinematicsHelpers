@@ -39,6 +39,16 @@ public:
         return pow(m_x, 2) + pow(m_y, 2) + pow(m_z, 2);
     }
 
+    Vector3& normalise() {
+        const double nrm {norm()};
+
+        m_x /= nrm;
+        m_y /= nrm;
+        m_z /= nrm;
+
+        return *this;
+    }
+
     //Cross product
     friend Vector3 operator%(const Vector3& v1, const Vector3& v2) {
 

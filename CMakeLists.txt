@@ -13,4 +13,5 @@ add_executable(RBKinematicsHelpers main.cpp
         quaternion.h
         CRP.h
         CRP.cpp
-        MRP.h)
+        MRP.h
+        attitudeSolvers.h)
