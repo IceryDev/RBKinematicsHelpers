@@ -51,11 +51,13 @@ int main() {
         a.normalise();
     }
 
-    Matrix kMatrix {AttitudeSolvers::getDevenportKMatrix(weights, bodyFrame, iFrame)};
+    Matrix3x3 olae {AttitudeSolvers::solveOLAE(weights, bodyFrame, iFrame)};
+    std::cout << olae << std::endl;
 
-    double optimalLambda {AttitudeSolvers::getOptimalLambdaQUEST(kMatrix, 2, 1e-6, 4)};
+    // Matrix kMatrix {AttitudeSolvers::getDevenportKMatrix(weights, bodyFrame, iFrame)};
+    //
+    // double optimalLambda {AttitudeSolvers::getOptimalLambdaQUEST(kMatrix, 2, 1e-6, 4)};
+    //
+    // Matrix3x3 finalDCM {AttitudeSolvers::getAttitudeRotMatrixQUEST(weights, bodyFrame, iFrame, optimalLambda)};
 
-    Matrix3x3 finalDCM {AttitudeSolvers::getAttitudeRotMatrixQUEST(weights, bodyFrame, iFrame, optimalLambda)};
-
-    std::cout << finalDCM << std::endl;
 }

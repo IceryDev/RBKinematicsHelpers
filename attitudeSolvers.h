@@ -87,4 +87,38 @@ namespace AttitudeSolvers {
         CRP c {crp[1, 1], crp[2, 1], crp[3, 1]};
         return c.getDCM();
     }
+
+    inline Matrix3x3 solveOLAE(const std::vector<double>& weights, const std::vector<Vector3>& bodyFrameVectors, const std::vector<Vector3>& inertialVectors) {
+        assert(weights.size() == bodyFrameVectors.size() && bodyFrameVectors.size() == inertialVectors.size());
+
+        Matrix dMatrix;
+        Matrix sMatrix;
+
+        {
+            const Matrix bodyMatrix {bodyFrameVectors};
+            const Matrix inertialMatrix {inertialVectors};
+
+            const Matrix bodyMatrixS {bodyFrameVectors, true, true};
+            const Matrix inertialMatrixS {inertialVectors, true, true};
+
+            dMatrix = Matrix {bodyMatrix-inertialMatrix};
+            sMatrix = Matrix {bodyMatrixS+inertialMatrixS};
+        }
+
+        Matrix wMatrix {weights.size()*3, weights.size()*3};
+        for (int i {0}; i < weights.size(); ++i) {
+            for (int j {0}; j < 3; ++j) {
+                int currentIndex {(i*3+j)+1};
+                wMatrix[currentIndex, currentIndex] = weights[i];
+            }
+        }
+
+        Matrix transposeSMat {Matrix::transpose(sMatrix)};
+
+        Matrix result {(transposeSMat.matMul(wMatrix).matMul(sMatrix)).inv().matMul(transposeSMat).matMul(wMatrix).matMul(dMatrix)};
+        CRP c {result[1, 1], result[2, 1], result[3, 1]};
+
+        return c.getDCM();
+
+    }
 }

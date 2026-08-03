@@ -121,6 +121,28 @@ public:
         m_arr[2] = v3[2];
     }
 
+    explicit Matrix(const std::vector<Vector3>& v, const bool colVec = true, const bool skewMatrix = false) :
+        m_rows((colVec) ? v.size()*3 : ((skewMatrix) ? 3 : 1)), m_cols((colVec) ? ((skewMatrix) ? 3 : 1) : v.size()*3), m_arr(v.size()*3*((skewMatrix) ? 3 : 1)) {
+        if (!skewMatrix) {
+            for (int i {0}; i < v.size(); ++i) {
+                const Vector3& tmp {v.at(i)};
+                m_arr[i*3] = tmp[0];
+                m_arr[i*3+1] = tmp[1];
+                m_arr[i*3+2] = tmp[2];
+            }
+        }
+        else {
+            auto currentPlace {m_arr.begin()};
+            for (const auto& vec : v) {
+                Matrix3x3 toSkew {Matrix3x3::skewSymmetric(vec)};
+                std::ranges::copy(toSkew.getInnerArray(), currentPlace);
+                currentPlace += 9;
+            }
+
+            if (!colVec) this->transpose();
+        }
+    }
+
     explicit Matrix(const MRow& mr) : m_rows(1), m_cols(mr.getWidth()), m_arr(m_cols*m_rows){
         std::ranges::copy(&mr.m_refMatrix[static_cast<int>(mr.m_row), 1], &mr.m_refMatrix[static_cast<int>(mr.m_row), static_cast<int>(m_cols)] + 1, m_arr.begin());
     }
@@ -143,6 +165,31 @@ public:
         for (int col {1}; col <= static_cast<int>(m_cols); ++col) {
             std::swap((*this)[r1, col], (*this)[r2, col]);
         }
+    }
+
+    Matrix& transpose() {
+        Matrix tmp {m_cols, m_rows};
+
+        for (int i {1}; i <= m_rows; ++i) {
+            for (int j {1}; j <= m_cols; ++j) {
+                std::swap((*this)[i, j], tmp[j, i]);
+            }
+        }
+
+        (*this) = std::move(tmp);
+        return *this;
+    }
+
+    static Matrix transpose(const Matrix& m) {
+        Matrix tmp {m.m_cols, m.m_rows};
+
+        for (int i {1}; i <= m.m_rows; ++i) {
+            for (int j {1}; j <= m.m_cols; ++j) {
+                tmp[j, i] = m[i, j];
+            }
+        }
+
+        return tmp;
     }
 
     [[nodiscard]] double trace() const {
