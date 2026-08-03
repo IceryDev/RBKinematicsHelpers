@@ -30,6 +30,10 @@ public:
         this->transpose();
     }
 
+    [[nodiscard]] const std::array<double, DIMENSION*DIMENSION>& getInnerArray() const {
+        return m_arr;
+    }
+
     static Matrix3x3 identity() {
         return Matrix3x3 {
             1, 0, 0,

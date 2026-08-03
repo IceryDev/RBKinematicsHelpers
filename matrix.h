@@ -5,6 +5,8 @@
 #include <iostream>
 #include <format>
 
+#include "matrix3x3.h"
+
 class Matrix {
 
     class MRow {
@@ -14,6 +16,14 @@ class Matrix {
     public:
         MRow(Matrix& mat, const std::size_t row) : m_refMatrix(mat), m_row(row){
             if (mat.m_rows < row) throw std::out_of_range(std::format("Error: Row number {} is out of range for matrix with {} row(s).", row, mat.m_rows));
+        }
+
+        MRow& addMultiple(const double scalar, const MRow& mr) {
+            if (mr.m_refMatrix.m_cols != m_refMatrix.m_cols) throw std::invalid_argument("Error: Cannot add rows with different sizes!");
+            for (int i {1}; i <= m_refMatrix.m_cols; ++i) {
+                m_refMatrix[static_cast<int>(m_row), i] += (scalar*mr.m_refMatrix[static_cast<int>(mr.m_row), i]);
+            }
+            return *this;
         }
 
         friend Matrix operator*(const double scalar, const MRow& mr) {
@@ -33,6 +43,7 @@ class Matrix {
         }
 
         MRow& operator*=(const double scalar) {
+            if (m_refMatrix.m_det) m_refMatrix.m_det.value() *= scalar;
             for (int i {1}; i <= m_refMatrix.m_cols; ++i) {
                 m_refMatrix[static_cast<int>(m_row), i] *= scalar;
             }
@@ -41,6 +52,7 @@ class Matrix {
         }
 
         MRow& operator/=(const double scalar) {
+            if (m_refMatrix.m_det) m_refMatrix.m_det.value() /= scalar;
             for (int i {1}; i <= m_refMatrix.m_cols; ++i) {
                 m_refMatrix[static_cast<int>(m_row), i] /= scalar;
             }
@@ -79,6 +91,7 @@ class Matrix {
     std::size_t m_cols {};
 
     std::vector<double> m_arr {};
+    std::optional<double> m_det {std::nullopt};
 
 public:
     explicit Matrix() : m_rows(1), m_cols(1), m_arr(1) {}
@@ -98,9 +111,22 @@ public:
         }
     }
 
+    explicit Matrix(const Matrix3x3& mat3) : m_rows(3), m_cols(3), m_arr(9){
+        std::ranges::copy(mat3.getInnerArray(), m_arr.begin());
+    }
+
+    explicit Matrix(const Vector3& v3, const bool colVec = true) : m_rows((colVec) ? 3 : 1), m_cols((colVec) ? 1 : 3), m_arr(3){
+        m_arr[0] = v3[0];
+        m_arr[1] = v3[1];
+        m_arr[2] = v3[2];
+    }
+
     explicit Matrix(const MRow& mr) : m_rows(1), m_cols(mr.getWidth()), m_arr(m_cols*m_rows){
         std::ranges::copy(&mr.m_refMatrix[static_cast<int>(mr.m_row), 1], &mr.m_refMatrix[static_cast<int>(mr.m_row), static_cast<int>(m_cols)] + 1, m_arr.begin());
     }
+
+    [[nodiscard]] std::size_t getCols() const {return m_cols;}
+    [[nodiscard]] std::size_t getRows() const {return m_rows;}
 
     static Matrix identity(const int size) {
         Matrix m {static_cast<std::size_t>(size), static_cast<std::size_t>(size)};
@@ -110,6 +136,20 @@ public:
         }
 
         return m;
+    }
+
+    void swapRows(const int r1, const int r2) {
+        if (m_det) m_det.value() *= -1;
+        for (int col {1}; col <= static_cast<int>(m_cols); ++col) {
+            std::swap((*this)[r1, col], (*this)[r2, col]);
+        }
+    }
+
+    [[nodiscard]] double trace() const {
+        if (m_rows != m_cols) throw std::invalid_argument("Error: A matrix must be square to get its trace!");
+        double sum {0};
+        for (int i {1}; i <= m_rows; ++i) sum += (*this)[i, i];
+        return sum;
     }
 
     Matrix matMul(Matrix matrix){
@@ -127,6 +167,23 @@ public:
         }
 
         return tempMatrix;
+    }
+
+    [[nodiscard]] double det() const {
+        if (m_rows != m_cols) throw std::invalid_argument("Error: The determinant is only defined for square matrices!");
+        if (m_det) return m_det.value();
+
+        Matrix m {*this};
+        return getRREF(m, std::nullopt).det();
+    }
+
+    Matrix inv() {
+        if (m_rows != m_cols) throw std::invalid_argument("Error: The inverse is only defined for square matrices!");
+        if (m_rows == 1) return *this;
+
+        Matrix m {*this};
+        Matrix inv {identity(static_cast<int>(m_rows))};
+        return getRREF(m, inv);
     }
 
     //Applies row operations when reducing source to target, source will be reduced and target can be used to get inverse of a matrix for instance
@@ -155,6 +212,51 @@ public:
         return {m_rows, m_cols};
     }
 
+    Matrix operator-() {
+        Matrix m {m_rows, m_cols};
+        for (int i {1}; i <= m_rows; ++i) {
+            for (int j {1}; j <= m_cols; ++j) {
+                m[i, j] = -((*this)[i, j]);
+            }
+        }
+        return m;
+    }
+
+    friend Matrix operator+(const Matrix& m1, const Matrix& m2) {
+        assert(m1.m_rows == m2.m_rows && m1.m_cols == m2.m_cols);
+
+        Matrix m {m1.m_rows, m1.m_cols};
+        for (int i {1}; i <= m1.m_rows; ++i) {
+            for (int j {1}; j <= m1.m_cols; ++j) {
+                m[i, j] = m1[i, j] + m2[i, j];
+            }
+        }
+        return m;
+    }
+
+    friend Matrix operator-(const Matrix& m1, const Matrix& m2) {
+        assert(m1.m_rows == m2.m_rows && m1.m_cols == m2.m_cols);
+
+        Matrix m {m1.m_rows, m1.m_cols};
+        for (int i {1}; i <= m1.m_rows; ++i) {
+            for (int j {1}; j <= m1.m_cols; ++j) {
+                m[i, j] = m1[i, j] - m2[i, j];
+            }
+        }
+        return m;
+    }
+
+    friend Matrix operator*(const double scalar, const Matrix& m1) {
+
+        Matrix m {m1.m_rows, m1.m_cols};
+        for (int i {1}; i <= m1.m_rows; ++i) {
+            for (int j {1}; j <= m1.m_cols; ++j) {
+                m[i, j] = m1[i, j] * scalar;
+            }
+        }
+        return m;
+    }
+
     friend std::ostream& operator<<(std::ostream& out, const Matrix& m) {
 
         out << std::format("Matrix{}x{}: [\n", m.m_rows, m.m_cols);
@@ -177,31 +279,39 @@ private:
     static void reduceRow(const int rows, Matrix& source, const std::optional<std::reference_wrapper<Matrix>> target = std::nullopt) {
 
         Matrix* m {(target) ? &target.value().get() : nullptr};
+        double det {1};
         for (int row {1}; row <= rows; ++row) {
-
 
             if (row != 1) {
                 for (int i {1}; i < row; ++i) {
-                    if (m) (*m)[row] += -source[row, i] * (*m)[i];
-                    source[row] += -source[row, i] * source[i];
+                    const double coef {-source[row, i]};
+                    if (m) (*m)[row].addMultiple(coef, (*m)[i]);
+                    source[row].addMultiple(coef, source[i]);
                 }
             }
 
-            for (int k {1}; k < source.m_rows; ++k) {
-                if (source[row, row] != 0) break;
-                int idx = ((row - 1 + k) % source.m_rows) + 1;
-                source[row] += source[idx];
-                if (m) (*m)[row] += (*m)[idx];
-            }
-
             if (source[row, row] == 0) {
-                throw std::invalid_argument("Error: The inputted matrix is singular!");
-                return;
+                int swapIdx {-1};
+                for (int k {row + 1}; k <= rows; ++k) {
+                    if (std::abs(source[k, row]) > 1e-10) { swapIdx = k; break; }
+                }
+                if (swapIdx == -1) {
+                    if (m) throw std::invalid_argument("Error: The inputted matrix is singular!");
+                    source.m_det = 0.0;
+                    return;
+                }
+                source.swapRows(row, swapIdx);
+                det = -det;
+                if (m) m->swapRows(row, swapIdx);
             }
 
-            if (m) (*m)[row] /= source[row, row];
-            source[row] /= source[row, row];
+            const double coef2 {source[row, row]};
+            det *= coef2;
+            if (m) (*m)[row] /= coef2;
+            source[row] /= coef2;
         }
+
+        if (source.m_rows == source.m_cols) source.m_det = det;
     }
 
     static void backSubstitute(Matrix& source, const std::optional<std::reference_wrapper<Matrix>> target = std::nullopt) {
@@ -209,9 +319,10 @@ private:
         Matrix* m {(target) ? &target.value().get() : nullptr};
 
         for (int i {1}; i < source.m_rows; ++i) {
+
             for (int j {i+1}; j <= source.m_rows; ++j) {
-                if (m) (*m)[i] += -source[i, j] * (*m)[j];
-                source[i] += -source[i, j] * source[j];
+                if (m) (*m)[i].addMultiple(-source[i, j], (*m)[j]);
+                source[i].addMultiple(-source[i, j], source[j]);
             }
         }
     }

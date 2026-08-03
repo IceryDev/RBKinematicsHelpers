@@ -34,15 +34,28 @@ Matrix3x3 get321EulerAnglesDeg(const double deg1, const double deg2, const doubl
 
 
 int main() {
-    Matrix A {{{2, 1, 1},
-           {1, 3, 2},
-           {1, 0, 0}}};
+    std::vector<double> weights {1, 1};
+    std::vector<Vector3> bodyFrame {
+        {0.8273, 0.5541, -0.0920},
+        {-0.8285, 0.5522, -0.0955}
+    };
+    std::vector<Vector3> iFrame {
+        {-0.1517, -0.9669, 0.2050},
+        {-0.8393, 0.4494, -0.3044}
+    };
 
-    Matrix Inv {{4}, {6}, {1}};
+    for (auto& a: bodyFrame) {
+        a.normalise();
+    }
+    for (auto& a: iFrame) {
+        a.normalise();
+    }
 
-    std::cout << Inv << std::endl;
+    Matrix kMatrix {AttitudeSolvers::getDevenportKMatrix(weights, bodyFrame, iFrame)};
 
-    Matrix::getRREF(A, Inv);
+    double optimalLambda {AttitudeSolvers::getOptimalLambdaQUEST(kMatrix, 2, 1e-6, 4)};
 
-    std::cout << Inv << std::endl;
+    Matrix3x3 finalDCM {AttitudeSolvers::getAttitudeRotMatrixQUEST(weights, bodyFrame, iFrame, optimalLambda)};
+
+    std::cout << finalDCM << std::endl;
 }
