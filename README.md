@@ -1,5 +1,6 @@
 ## Rigid Body Kinematics Helpers
-Code for calculating attitudes for my Coursera course. 
+C++ library of attitude descriptions, solvers, and numeric integrators to support my self-study of Spacecraft Dynamics and Control on Coursera.
+The methods below are validated by the questions in the course.
 
 ---
 Contains C++ classes for the following attitude descriptions:
@@ -14,7 +15,21 @@ Along with integrators to solve differential kinematic equations using these des
 ---
 Attitude Solvers:
 - TRIAD Method
-- Wahba's Problem Solvers (Devenport's q-Method & QUEST Method)
+- Wahba's Problem Solvers (Davenport's q-Method & QUEST Method)
 - OLAE Method
 
 Also lots of matrix/vector operation functions, including inverses and determinants.
+
+## Building
+
+Requirements: CMake >= 3.20 and a C++23 compiler (i.e. GCC 12+ or Clang 15+).
+
+```bash
+cmake -S . -B build
+cmake --build build
+./build/RBKinematicsHelpers
+```
+
+## Example
+
+`main.cpp` estimates a spacecraft's attitude from two vector observations (i.e. sun and magnetic-field directions), measured in both the body frame and the inertial frame. It solves for the rotation matrix using OLAE and prints the resulting 3x3 DCM.
